@@ -1,0 +1,1 @@
+Get-MsolDevice -All -IncludeSystemManagedDevices | where {($_.DeviceTrustType -eq 'Domain Joined') -and (-not([string]($_.AlternativeSecurityIds)).StartsWith("X509:"))} | Select-Object -Property DisplayName |out-file C:\Local_Use\pending.txt

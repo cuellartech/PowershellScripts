@@ -1,0 +1,1 @@
+﻿Get-WindowsCapability -Online |? {$_.Name -like "*XPS*"} | Add-WindowsCapability -Online -Source '\\spsccm\cmsource$\Operating Systems\Win10_FOD\W10_1809_FOD' -LogPath %TEMP%\Add-WindowsCapability-RSAT.log

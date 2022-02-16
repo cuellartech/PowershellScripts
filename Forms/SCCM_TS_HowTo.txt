@@ -1,0 +1,7 @@
+Create Run Command Line step with below:
+
+
+ServiceUI.exe -process:TSProgressUI.exe %SYSTEMROOT%\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile -WindowStyle Hidden -file LowDiskSpace_WPF2.ps1
+
+
+Make sure this is set to start in a Package with serviceui.exe and script.

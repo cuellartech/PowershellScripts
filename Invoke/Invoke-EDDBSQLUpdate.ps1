@@ -35,12 +35,13 @@ function Get-SafeSQLString ($strInput) {
 
 Write-Host "Getting new employees within the last three weeks..." `n
 
-$When = ((Get-Date).AddDays(-21)).Date
-$newEmployees = Get-ADUser -Filter {whenCreated -ge $When -and SamAccountName -like "u*"} -Properties SamAccountName, SurName, GivenName, Office, streetAddress, OfficePhone, Title, Department | Select-Object -Property @{Name='EIN';Expression={$_.SamAccountName}}, @{Name='LastName';Expression={$_.SurName}}, @{Name='FirstName';Expression={$_.GivenName}}, @{Name='Location';Expression={$_.Office}}, @{Name='Floor';Expression={$_.streetAddress}}, @{Name='Telephone';Expression={$_.OfficePhone}}, @{Name='JobTitle';Expression={$_.Title}}, Department
+$When = ((Get-Date).AddDays(-60)).Date
+$newEmployees = Get-ADUser -Filter {whenCreated -ge $When -and SamAccountName -like "u*"} -Properties SamAccountName, SurName, GivenName, Office, streetAddress, OfficePhone, Title, Department | Select-Object -Property @{Name='EIN';Expression={$_.SamAccountName}}, @{Name='LastName';Expression={$_.SurName}}, @{Name='FirstName';Expression={$_.GivenName}}, @{Name='Location';Expression={$_.streetAddress}}, @{Name='Floor';Expression={$_.Office}}, @{Name='Telephone';Expression={$_.OfficePhone}}, @{Name='JobTitle';Expression={$_.Title}}, Department
 
 foreach($newEmployee in $newEmployees){
 
     $currentEIN = $newEmployee.EIN
+    $currentLocation = $newEmployee.Location
     $department = $newEmployee.Department
     $title = $newEmployee.JobTitle
 
@@ -60,8 +61,19 @@ foreach($newEmployee in $newEmployees){
     WHERE EIN = '$currentEIN'"
 
     if(($null -eq $exist) -or ($exist -like 0)){
+
+        $cLocation = SQL_CONNECT "
+        SELECT [LOCATION]
+        FROM [EDDB].[dbo].[LocationCodes]
+        WHERE LOWER(ADDRESS) like LOWER('%$currentLocation%')
+        "
+
+        if(($null -eq $cLocation) -or ($cLocation -like 0)){
+            $insertLoc = "No Location Found"
+        } else {$insertLoc = $cLocation.Location}
+
         SQL_CONNECT "
-        INSERT INTO Employees (EIN,LastName,FirstName,Location,Floor,Telephone,JobTitle,Department,Status) VALUES ('$($newEmployee.EIN)','$(Get-SafeSQLString($newEmployee.LastName))','$(Get-SafeSQLString($newEmployee.FirstName))','33 N Stone','1','$($newEmployee.Telephone)','$($newEmployee.JobTitle)','$($newEmployee.Department)','NewlyInserted')
+        INSERT INTO Employees (EIN,LastName,FirstName,Location,Floor,Telephone,JobTitle,Department,Status) VALUES ('$($newEmployee.EIN)','$(Get-SafeSQLString($newEmployee.LastName))','$(Get-SafeSQLString($newEmployee.FirstName))','$($insertLoc)','1','$($newEmployee.Telephone)','$($newEmployee.JobTitle)','$($newEmployee.Department)','NewlyInserted')
         "
     } else {
     }

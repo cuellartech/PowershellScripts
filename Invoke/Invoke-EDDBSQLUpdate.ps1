@@ -35,7 +35,7 @@ function Get-SafeSQLString ($strInput) {
 
 Write-Host "Getting new employees within the last three weeks..." `n
 
-$When = ((Get-Date).AddDays(-60)).Date
+$When = ((Get-Date).AddDays(-21)).Date
 $newEmployees = Get-ADUser -Filter {whenCreated -ge $When -and SamAccountName -like "u*"} -Properties SamAccountName, SurName, GivenName, Office, streetAddress, OfficePhone, Title, Department | Select-Object -Property @{Name='EIN';Expression={$_.SamAccountName}}, @{Name='LastName';Expression={$_.SurName}}, @{Name='FirstName';Expression={$_.GivenName}}, @{Name='Location';Expression={$_.streetAddress}}, @{Name='Floor';Expression={$_.Office}}, @{Name='Telephone';Expression={$_.OfficePhone}}, @{Name='JobTitle';Expression={$_.Title}}, Department
 
 foreach($newEmployee in $newEmployees){
@@ -45,7 +45,7 @@ foreach($newEmployee in $newEmployees){
     $department = $newEmployee.Department
     $title = $newEmployee.JobTitle
 
-    if($department -like "*Board*" -or $department -like "*Court*"){
+    if($department -like "*Board*" -or $department -like "*Court*" -or $department -like "*Recorder*"){
         continue
     }
 
